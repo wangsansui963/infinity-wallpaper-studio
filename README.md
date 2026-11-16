@@ -32,7 +32,7 @@
 
 ### 方式二：免安装绿色版
 
-下载 `Infinity Wallpaper Studio.exe`，放到任意目录双击运行。程序不依赖本机 Python。
+从 [Releases](https://github.com/wangsansui963/infinity-wallpaper-studio/releases/latest) 下载 `Infinity-Wallpaper-Studio-portable.exe`，放到任意目录双击运行。程序不依赖本机 Python。
 
 ### 方式三：源码运行
 
