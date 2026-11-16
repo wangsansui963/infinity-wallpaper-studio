@@ -6,6 +6,8 @@
 - 无需登录、无需 Cookie、无需签名
 - 提供 Windows 安装包、免安装绿色版、源码运行三种方式
 
+> 下载地址：**[Releases v1.0.0](https://github.com/wangsansui963/infinity-wallpaper-studio/releases/tag/v1.0.0)**（安装包 10.2 MB / 绿色版 10.2 MB）
+
 ![界面截图](docs/screenshot.png)
 
 ## 功能
@@ -22,7 +24,7 @@
 
 ### 方式一：安装包（推荐）
 
-1. 到 [Releases](../../releases) 下载 `InfinityWallpaperStudio-Setup-*.exe`
+1. 到 [Releases](https://github.com/wangsansui963/infinity-wallpaper-studio/releases/latest) 下载 `InfinityWallpaperStudio-Setup-*.exe`
 2. 双击按向导安装（简体中文，无需管理员权限）
 3. 桌面 / 开始菜单启动，浏览器自动打开界面
 
