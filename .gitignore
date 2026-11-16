@@ -1,0 +1,22 @@
+# ---- 构建产物 ----
+build/
+dist/
+build-tools/
+*.spec
+
+# ---- 运行时数据 ----
+state.sqlite3
+downloads/
+_test_out/
+_install_test/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- 系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini

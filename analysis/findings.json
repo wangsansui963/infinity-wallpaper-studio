@@ -1,0 +1,143 @@
+{
+  "project": "Infinity New Tab Pro 壁纸图库解码",
+  "method": "Craft Anything / evidence-first: 观察(observed) → 推导(derived) → 推断(inferred)，每条结论附证据编号；静态解析为主，仅用只读 GET 做最小验证，未运行插件代码。",
+  "target": {
+    "package": "infinity-new-tab-pro@latest.zip",
+    "inner": "infinity-new-tab-pro.crx",
+    "format": "CRX3 (magic Cr24, version 3, header length 1309)",
+    "extension_version": "11.0.41",
+    "manifest": "manifest_version 3, newtab override, service_worker serviceworker.js",
+    "inner_file_count": 392
+  },
+  "evidence": [
+    {
+      "id": "ev_001",
+      "type": "observed",
+      "source": "zip / CRX3 header bytes 0..12",
+      "quote": "43723234 03000000 1d050000 → 'Cr24', version=3, header_len=1309; offset 1321 starts with PK\\x03\\x04",
+      "note": "zip 内是 CRX3；剥掉 12+1309 字节头后得到标准 ZIP，共 392 个文件。"
+    },
+    {
+      "id": "ev_002",
+      "type": "observed",
+      "source": "manifest.json",
+      "quote": "\"version\":\"11.0.41\",\"chrome_url_overrides\":{\"newtab\":\"newtab/index.html\"}",
+      "note": "新标签页 UI 是壁纸功能的入口；无强制 host_permissions，但有 optional <all_urls>。"
+    },
+    {
+      "id": "ev_003",
+      "type": "observed",
+      "source": "newtab/newtab.js, config module (offset ~api.inftab.com/v2)",
+      "quote": "x=a?\"https://api.inftab.com/v2\":\"...\", T=a?\"https://api.inftab.com\":\"...\", O=\"https://infinity-api.infinitynewtab.com\"; exports y=x, w=T, x=O",
+      "note": "推导出两个 API 基址：r.y = /v2，r.w = 根域。生产环境开关 a=true。"
+    },
+    {
+      "id": "ev_004",
+      "type": "observed",
+      "source": "newtab/newtab.js, wallpaper API module",
+      "quote": "i.a.get(r.y+\"/get_wallpaper_list\", Object.assign({client:\"pc\"},t), {_single:\"getWallpaperListByType\"})",
+      "note": "壁纸图库列表接口；客户端固定带 client=pc，order \"1\"→like、\"2\"→_id。"
+    },
+    {
+      "id": "ev_005",
+      "type": "observed",
+      "source": "newtab/newtab.js, URL helper k()",
+      "quote": "rawUrl:t, url:`${t}?imageView2/2/w/${c.normalWidth}/${c.format}interlace/1`, content:`${t}?imageView2/2/w/${c.smallWidth}/${c.format}interlace/1`",
+      "note": "图片走七牛 imageView2 处理：rawSrc 是原图，追加宽度/format/webp 得缩略图。"
+    },
+    {
+      "id": "ev_006",
+      "type": "observed",
+      "source": "newtab/newtab.js, wallpaper_sources array (window.__INFINITY__.wallpaper_sources)",
+      "quote": "all, InfinityLandscape, Infinity, bing, Unsplash, Life Of Pix, MMT, Realistic Shots, Jay Mantri, Free Nature Stock, Skitter Photo, Startup Stock Photos, Barn Images, Picography",
+      "note": "14 个来源枚举；颜色筛选值 c00018/de8930/f7d946/cbe582/506f37/60a8d8/184878/be7ab9。"
+    },
+    {
+      "id": "ev_007",
+      "type": "observed",
+      "source": "14.js, tag enum Al",
+      "quote": "collect, discover, nature, ocean, architecture, animals, travel, food-drink, anime, athletics, technology, street-photography",
+      "note": "主题标签枚举；collect/discover 属于登录态 UI 分类，公共图库用其余 10 个 tag。"
+    },
+    {
+      "id": "ev_008",
+      "type": "observed",
+      "source": "14.js, wallpaper store",
+      "quote": "this.filterCondition.page=t.nextPage, this._pageCount=t.totalPages; loadWallpapersRaw({...this.filterCondition, page:0})",
+      "note": "分页从 page=0 开始，服务端返回 nextPage/totalPages，UI 滚动加载下一页。"
+    },
+    {
+      "id": "ev_009",
+      "type": "observed",
+      "source": "live GET https://api.inftab.com/v2/get_wallpaper_list?client=pc",
+      "quote": "{\"code\":0,\"data\":{\"count\":51632,\"totalPages\":1033,\"nextPage\":1,\"list\":[{\"src\":{\"rawSrc\":\"https://infinitypro-img.infinitynewtab.com/findaphoto/bigLink/15228.jpg\"},\"colors\":[...],\"like\":502,\"_id\":\"57ca8fc2d54a684cdf14dcfe\",\"imgId\":\"15228\",\"dimensions\":\"2048px × 1143px\",\"source\":\"Unsplash\"}, ...]}}",
+      "note": "接口无需登录/签名，直接返回 50 条；图库总量 51632 张。字段随批次略有差异（部分记录 colors 为空、dimensions 用 'x' 分隔）。"
+    },
+    {
+      "id": "ev_010",
+      "type": "observed",
+      "source": "live GET 参数探测",
+      "quote": "source=Unsplash→count 6915; source=bing→559; tag=nature→7677; color=60a8d8→1047; order=like/_id→按点赞/收录排序; page=1→nextPage=2; page=1033→list=[]; size/count/limit→code 2001 \"is not allowed\"",
+      "note": "允许参数白名单 = client, page, source, tag, color, order；每页固定 50 条。"
+    },
+    {
+      "id": "ev_011",
+      "type": "observed",
+      "source": "live GET 图片直链",
+      "quote": "…/findaphoto/bigLink/15228.jpg → 200 image/jpeg 172636 B (FFD8FF…); 加 ?imageView2/2/w/400/format/webp/interlace/1 → 200 image/webp 9764 B (RIFF…WEBP)",
+      "note": "原图与缩略图均可匿名直取，无需 Referer/Cookie；CDN 支持任意宽度缩放。"
+    },
+    {
+      "id": "ev_012",
+      "type": "derived",
+      "source": "ev_003 + ev_004 + ev_009",
+      "quote": "GET https://api.inftab.com/v2/get_wallpaper_list?client=pc&page=<n>&source=<s>&tag=<t>&color=<hex>&order=<o>",
+      "note": "完整的图库查询式；page 为 0 基，终止条件 nextPage > totalPages 或 list 为空。"
+    },
+    {
+      "id": "ev_013",
+      "type": "inferred",
+      "source": "ev_009 记录中的 source 字段与 CDN 路径",
+      "quote": "findaphoto/bigLink/*.jpg、wallpaper/<tag>/*.jpg、bing/YYYYMMDD.jpg；source 值大小写不统一（Unsplash / unsplash）",
+      "note": "图库是多个免费图源的历史聚合；下载器不依赖 imgId 格式，直接用 src.rawSrc 作为唯一真值，并对 source 做大小写不敏感匹配。"
+    }
+  ],
+  "api": {
+    "list": "https://api.inftab.com/v2/get_wallpaper_list",
+    "method": "GET",
+    "auth": "无需登录、无签名、无 Cookie",
+    "params": {
+      "client": "pc (固定)",
+      "page": "0 基页码，每页 50 条",
+      "source": "all(留空) | InfinityLandscape | Infinity | bing | Unsplash | Life Of Pix | MMT | Realistic Shots | Jay Mantri | Free Nature Stock | Skitter Photo | Startup Stock Photos | Barn Images | Picography",
+      "tag": "nature | ocean | architecture | animals | travel | food-drink | anime | athletics | technology | street-photography",
+      "color": "c00018 | de8930 | f7d946 | cbe582 | 506f37 | 60a8d8 | 184878 | be7ab9 (不带 #)",
+      "order": "like (按点赞) | _id (按收录) | 留空(默认)"
+    },
+    "response_fields": ["code", "message", "data.count", "data.totalPages", "data.nextPage", "data.list[]._id", "data.list[].imgId", "data.list[].source", "data.list[].like", "data.list[].dimensions", "data.list[].colors", "data.list[].src.rawSrc"],
+    "image_original": "src.rawSrc",
+    "image_scaled": "src.rawSrc + '?imageView2/2/w/<W>/format/webp/interlace/1'",
+    "catalog_size_observed": 51632
+  },
+  "related_endpoints_not_used": [
+    "GET {root}/get-wallpaper (随机/自动换壁纸)",
+    "GET /v2/random-wallpaper",
+    "GET /v2/get_bing_wallpaper",
+    "GET /v2/get_next_wallpaper",
+    "POST /v2/like_wallpaper, /v2/collection_wallpaper (需登录)",
+    "POST /v2/get_user_wallpaper_library* (需登录)"
+  ],
+  "findings": [
+    "F1 (ev_001, ev_002): 目标为 CRX3 打包的 MV3 扩展 v11.0.41，壁纸 UI 位于 newtab + 数字 chunk。",
+    "F2 (ev_003, ev_004, ev_012): 壁纸图库由公开只读接口 /v2/get_wallpaper_list 提供，不需要用户凭证。",
+    "F3 (ev_009, ev_010): 图库约 5.16 万张、1033 页；支持来源/主题/颜色/排序组合筛选，未知参数会被服务端拒绝。",
+    "F4 (ev_005, ev_011): 原图直链可匿名下载；缩略图通过七牛 imageView2 实时生成，因此批量下载器可只缓存小图、按需取原图。",
+    "F5 (ev_006, ev_007, ev_013): 来源/主题枚举来自扩展内硬编码常量，已完整还原并写入下载器配置。"
+  ],
+  "unknowns": [
+    "接口为插件私有用途，未公开的速率限制与长期可用性未知；下载器默认并发 4、翻页间隔 200ms。",
+    "登录态专属接口（收藏、自定义图库、上传）未验证，也不在下载器范围内。",
+    "各图源的授权条款未在扩展内声明；下载内容仅供个人使用，请勿再分发或商用。",
+    "craft-anything 的 MCP 工具集在本会话未挂载，因此未使用 core_* 取证工具；证据以本文件的字节引用与只读响应记录为准。"
+  ]
+}
