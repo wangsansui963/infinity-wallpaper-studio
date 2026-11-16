@@ -143,3 +143,25 @@ makensis installer.nsi
 ## 免责声明
 
 本项目仅用于**个人学习与个人备份**。接口属于该插件的私有用途，其速率限制与长期可用性不在本项目控制范围内，请勿高频抓取。各图源（Unsplash、Bing 等）的授权条款以各自官网为准，下载内容请勿用于商业用途或二次分发。若权利人提出异议，请停止使用并删除相关内容。
+
+## License
+
+[MIT](LICENSE) © 2026 wangsansui963
+
+许可证仅覆盖本仓库的源码，不涉及第三方图源提供的图片内容，也不涉及 Infinity New Tab Pro 插件本身。
+
+---
+
+## English
+
+**Infinity Wallpaper Studio** — decodes the wallpaper gallery of the *Infinity New Tab Pro* browser extension (v11.0.41) and ships a batch downloader for Windows.
+
+- Gallery size: **51,632 wallpapers** over 1,033 pages; no login, cookie or signature required
+- Endpoint: `GET https://api.inftab.com/v2/get_wallpaper_list?client=pc&page=<0-based>&source=&tag=&color=&order=` (50 items per page)
+- Images: the `src.rawSrc` field is the original file; append `?imageView2/2/w/<width>/format/webp/interlace/1` for server-side WebP resizing
+- Run it: [Windows installer](https://github.com/wangsansui963/infinity-wallpaper-studio/releases/latest) · portable exe · `python app.py` (Python 3.9+, standard library only)
+- CLI: `python app.py --cli --pages 5 --source Unsplash --tag nature --out D:\Wallpapers`
+
+Filter by source / tag / dominant colour / order / keyword / minimum width / minimum likes, download the selection or crawl N pages, dedupe via SQLite, and append a `wallpapers.csv` manifest.
+
+For personal use only. The endpoint is private to the extension, its rate limits are not under our control, and the original image licenses still apply.
